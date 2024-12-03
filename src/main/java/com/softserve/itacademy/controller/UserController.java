@@ -74,7 +74,7 @@ public class UserController {
         UserDto oldUser = userService.findByIdThrowing(id);
 
         if (result.hasErrors()) {
-            updateUserDto.setRole(oldUser.getRole()); // fallback to the current role
+            updateUserDto.setRole(oldUser.getRole());
             model.addAttribute("roles", UserRole.values());
             return "update-user";
         }
@@ -104,4 +104,34 @@ public class UserController {
         model.addAttribute("users", userService.getAll());
         return "users-list";
     }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN') or @securityService.isCurrentUserAndOwner(#id)")
+    @GetMapping("/{id}/change-password")
+    public String changePasswordForm(@PathVariable long id, Model model) {
+        User user = userService.readById(id);
+        model.addAttribute("user", user);
+        return "update-user";
+    }
+
+//    @PreAuthorize("hasAnyAuthority('ADMIN') or @securityService.isCurrentUserAndOwner(#id)")
+//    @PostMapping("/{id}/change-password")
+//    public String changePassword(@PathVariable long id,
+//                                 Model model,
+//                                 @Validated @ModelAttribute("user") UpdateUserDto updateUserDto, BindingResult result,
+//                                 @RequestParam("oldPassword") String oldPassword,
+//                                 @RequestParam("newPassword") String newPassword) {
+//        User user = userService.readById(id);
+//        if (result.hasErrors()) {
+//
+//            model.addAttribute("error", "Old password is incorrect.");
+//            return "update-user";
+//        }
+//        if (! passwordEncoder.matches(oldPassword, user.getPassword())) {
+//
+//            user.setPassword(passwordEncoder.encode(newPassword));
+//
+//
+//        }
+//        return "redirect:/users/" + id + "/read";
+//    }
 }
