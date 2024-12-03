@@ -33,6 +33,7 @@ public class SecurityConfig {
                 //       other pages - for authenticated only
                 // Done
                 .requestMatchers("/static/**", "/img/**", "/login", "/home", "/").permitAll()
+                .requestMatchers("/users/create").hasAuthority("ADMIN")
                 .anyRequest().authenticated());
         http.authenticationProvider(webAuthenticationProvider);
         http.logout(logout -> logout

@@ -71,7 +71,7 @@ public class UserControllerTest {
     public void shouldNotDisplayUserCreationForm() throws Exception {
         mvc.perform(get("/users/create")
                         .contentType(MediaType.TEXT_HTML))
-                .andExpect(status().is3xxRedirection())
+                .andExpect(status().isForbidden())
                 .andDo(print());
 
         verifyNoInteractions(passwordEncoder, userService);

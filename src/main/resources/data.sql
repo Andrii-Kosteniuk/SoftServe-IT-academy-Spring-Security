@@ -1,8 +1,8 @@
 -- SET IDENTITY_INSERT users ON
 
-INSERT INTO users (id, first_name, last_name, email, password, role) VALUES (5, 'Nick', 'Green', 'nick@mail.com', '{noop}2222', 'USER');
-INSERT INTO users (id, first_name, last_name, email, password, role) VALUES (6, 'Nora', 'White', 'nora@mail.com', '{noop}3333', 'USER');
-INSERT INTO users (id, first_name, last_name, email, password, role) VALUES (4, 'Mike', 'Brown', 'mike@mail.com', '{noop}1111', 'ADMIN');
+INSERT INTO users (id, first_name, last_name, email, password, role) VALUES (5, 'Nick', 'Green', 'nick@mail.com', '$2y$10$MylBJG.1uWKaJSKYePsxUObsqYjCNhaphWMUsRZSrXjgWVA65AaC6', 'USER');
+INSERT INTO users (id, first_name, last_name, email, password, role) VALUES (6, 'Nora', 'White', 'nora@mail.com', '$2y$10$11T874WuR39e0kALIbwd.uXXrX4jDvtC/9NFQMcddQ03BRsh5RVRy', 'USER');
+INSERT INTO users (id, first_name, last_name, email, password, role) VALUES (4, 'Mike', 'Brown', 'mike@mail.com', '$2a$12$Um1zTxPN7aNWzU/Jxz2eQ.y4vFMJX4jRRvxFdx.AxJhmB2HiE4j7K', 'ADMIN');
 
 -- SET IDENTITY_INSERT users OFF
 --

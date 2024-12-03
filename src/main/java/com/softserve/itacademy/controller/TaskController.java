@@ -1,11 +1,11 @@
 package com.softserve.itacademy.controller;
 
 import com.softserve.itacademy.dto.TaskDto;
-import com.softserve.itacademy.model.TaskPriority;
-import com.softserve.itacademy.service.TaskService;
 import com.softserve.itacademy.dto.TaskTransformer;
 import com.softserve.itacademy.model.Task;
+import com.softserve.itacademy.model.TaskPriority;
 import com.softserve.itacademy.service.StateService;
+import com.softserve.itacademy.service.TaskService;
 import com.softserve.itacademy.service.ToDoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +28,7 @@ public class TaskController {
     private final TaskTransformer taskTransformer;
 
     // TODO: can create todo if is owner or collaborator
+    @PreAuthorize("@securityService.isOwnerOrCollaborator(#todoId)")
     @GetMapping("/create/todos/{todo_id}")
     public String create(@PathVariable("todo_id") long todoId, Model model) {
         model.addAttribute("task", new TaskDto());
@@ -37,6 +38,7 @@ public class TaskController {
     }
 
     // TODO: can create todo if is owner or collaborator
+    @PreAuthorize("@securityService.isOwnerOrCollaborator(#todoId)")
     @PostMapping("/create/todos/{todo_id}")
     public String create(@PathVariable("todo_id") long todoId, Model model,
                          @Validated @ModelAttribute("task") TaskDto taskDto, BindingResult result) {
@@ -53,20 +55,24 @@ public class TaskController {
     }
 
     // TODO: only if is owner or collaborator
+    @PreAuthorize("@securityService.isOwnerOrCollaborator(#todoId)")
     @GetMapping("/{task_id}/update/todos/{todo_id}")
     public String taskUpdateForm(@PathVariable("task_id") long taskId, @PathVariable("todo_id") long todoId, Model model) {
         TaskDto taskDto = taskTransformer.convertToDto(taskService.readById(taskId));
         model.addAttribute("task", taskDto);
+        model.addAttribute("todo", todoService.readById(todoId));
         model.addAttribute("priorities", TaskPriority.values());
         model.addAttribute("states", stateService.getAll());
         return "update-task";
     }
 
     // TODO: only if is owner or collaborator
+    @PreAuthorize("@securityService.isOwnerOrCollaborator(#todoId)")
     @PostMapping("/{task_id}/update/todos/{todo_id}")
     public String update(@PathVariable("task_id") long taskId, @PathVariable("todo_id") long todoId, Model model,
                          @Validated @ModelAttribute("task") TaskDto taskDto, BindingResult result) {
         if (result.hasErrors()) {
+            model.addAttribute("task", taskService.readById(taskId));
             model.addAttribute("priorities", TaskPriority.values());
             model.addAttribute("states", stateService.getAll());
             return "update-task";
@@ -83,6 +89,7 @@ public class TaskController {
     }
 
     // TODO: only if is owner or collaborator
+    @PreAuthorize("@securityService.isOwnerOrCollaborator(#todoId)")
     @GetMapping("/{task_id}/delete/todos/{todo_id}")
     public String delete(@PathVariable("task_id") long taskId, @PathVariable("todo_id") long todoId) {
         taskService.delete(taskId);
