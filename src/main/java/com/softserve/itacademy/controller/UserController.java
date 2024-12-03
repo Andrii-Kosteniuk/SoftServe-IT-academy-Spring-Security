@@ -6,6 +6,7 @@ import com.softserve.itacademy.dto.userDto.UpdateUserDto;
 import com.softserve.itacademy.dto.userDto.UserDto;
 import com.softserve.itacademy.model.User;
 import com.softserve.itacademy.model.UserRole;
+import com.softserve.itacademy.repository.UserRepository;
 import com.softserve.itacademy.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +25,7 @@ public class UserController {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     // TODO: for admins only
     @IsAdmin
@@ -117,21 +119,23 @@ public class UserController {
 //    @PostMapping("/{id}/change-password")
 //    public String changePassword(@PathVariable long id,
 //                                 Model model,
-//                                 @Validated @ModelAttribute("user") UpdateUserDto updateUserDto, BindingResult result,
+//                                 @Validated @ModelAttribute("user") User user,
+//                                 BindingResult result,
 //                                 @RequestParam("oldPassword") String oldPassword,
 //                                 @RequestParam("newPassword") String newPassword) {
-//        User user = userService.readById(id);
-//        if (result.hasErrors()) {
 //
-//            model.addAttribute("error", "Old password is incorrect.");
+//        if (! passwordEncoder.matches(oldPassword, user.getPassword())) {
+//            result.rejectValue("oldPassword", "error.oldPassword", "Old password is incorrect.");
+//        }
+//
+//        if (result.hasErrors()) {
+//            model.addAttribute("user", user);
 //            return "update-user";
 //        }
-//        if (! passwordEncoder.matches(oldPassword, user.getPassword())) {
 //
-//            user.setPassword(passwordEncoder.encode(newPassword));
+//        user.setPassword(passwordEncoder.encode(newPassword));
+//        userRepository.save(user);
 //
-//
-//        }
 //        return "redirect:/users/" + id + "/read";
 //    }
 }
