@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,6 +17,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 //Done
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
     private final WebAuthenticationProvider webAuthenticationProvider;
 
@@ -31,7 +33,6 @@ public class SecurityConfig {
                 //       other pages - for authenticated only
                 // Done
                 .requestMatchers("/static/**", "/img/**", "/login", "/home", "/").permitAll()
-                .requestMatchers("/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated());
         http.authenticationProvider(webAuthenticationProvider);
         http.logout(logout -> logout
