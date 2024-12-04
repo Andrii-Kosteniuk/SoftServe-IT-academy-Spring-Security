@@ -32,6 +32,7 @@ public class TaskController {
     @PreAuthorize("@securityService.isOwnerOrCollaborator(#todoId)")
     @GetMapping("/create/todos/{todoId}")
     public String create(@PathVariable("todoId") long todoId, Model model) {
+        log.info("Accessing create task form for ToDo ID: {}", todoId);
         model.addAttribute("task", new TaskDto());
         model.addAttribute("todo", todoService.readById(todoId));
         model.addAttribute("priorities", TaskPriority.values());
@@ -43,14 +44,15 @@ public class TaskController {
     @PostMapping("/create/todos/{todo_id}")
     public String create(@PathVariable("todo_id") long todoId, Model model,
                          @Validated @ModelAttribute("task") TaskDto taskDto, BindingResult result) {
+        log.info("Creating task for ToDo ID: {}", todoId);
         if (result.hasErrors()) {
+            log.warn("Validation errors occurred while creating task for ToDo ID: {}", todoId);
             model.addAttribute("todo", todoService.readById(todoId));
             model.addAttribute("priorities", TaskPriority.values());
             return "create-task";
         }
-
         taskService.create(taskDto);
-        log.info("Task was created");
+        log.info("Task created successfully for ToDo ID: {}", todoId);
 
         return "redirect:/todos/" + todoId + "/read";
     }
@@ -59,6 +61,7 @@ public class TaskController {
     @PreAuthorize("@securityService.isOwnerOrCollaborator(#todoId)")
     @GetMapping("/{task_id}/update/todos/{todoId}")
     public String taskUpdateForm(@PathVariable("task_id") long taskId, @PathVariable("todoId") long todoId, Model model) {
+        log.info("Accessing update form for Task ID: {} in ToDo ID: {}", taskId, todoId);
         TaskDto taskDto = taskTransformer.convertToDto(taskService.readById(taskId));
         model.addAttribute("task", taskDto);
         model.addAttribute("todo", todoService.readById(todoId));
@@ -72,8 +75,13 @@ public class TaskController {
     @PostMapping("/{task_id}/update/todos/{todoId}")
     public String update(@PathVariable("task_id") long taskId, @PathVariable("todoId") long todoId, Model model,
                          @Validated @ModelAttribute("task") TaskDto taskDto, BindingResult result) {
-        if (taskDto == null) throw new NullEntityReferenceException();
+        log.info("Updating Task ID: {} in ToDo ID: {}", taskId, todoId);
+        if (taskDto == null) {
+            log.error("TaskDto is null for Task ID: {}", taskId);
+            throw new NullEntityReferenceException();
+        }
         if (result.hasErrors()) {
+            log.warn("Validation errors occurred while updating Task ID: {}", taskId);
             model.addAttribute("task", taskService.readById(taskId));
             model.addAttribute("priorities", TaskPriority.values());
             model.addAttribute("states", stateService.getAll());
@@ -87,6 +95,7 @@ public class TaskController {
         );
         taskService.update(task);
         log.info("Task was updated");
+        log.info("Task ID: {} updated successfully in ToDo ID: {}", taskId, todoId);
         return "redirect:/todos/" + todoId + "/read";
     }
 
@@ -94,8 +103,9 @@ public class TaskController {
     @PreAuthorize("@securityService.isOwnerOrCollaborator(#todoId)")
     @GetMapping("/{task_id}/delete/todos/{todo_id}")
     public String delete(@PathVariable("task_id") long taskId, @PathVariable("todo_id") long todoId) {
+        log.info("Deleting Task ID: {} from ToDo ID: {}", taskId, todoId);
         taskService.delete(taskId);
-        log.info("Task was deleted");
+        log.info("Task ID: {} deleted successfully from ToDo ID: {}", taskId, todoId);
         return "redirect:/todos/" + todoId + "/read";
     }
 }
