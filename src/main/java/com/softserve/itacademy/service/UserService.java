@@ -6,15 +6,11 @@ import com.softserve.itacademy.model.UserRole;
 import com.softserve.itacademy.dto.userDto.UserDto;
 import com.softserve.itacademy.dto.userDto.UserDtoConverter;
 import com.softserve.itacademy.config.exception.NullEntityReferenceException;
-//import com.softserve.itacademy.config.security.WebAuthenticationToken;
 import com.softserve.itacademy.model.User;
 import com.softserve.itacademy.repository.UserRepository;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;

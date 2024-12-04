@@ -1,6 +1,5 @@
 package com.softserve.itacademy.service;
 
-import com.softserve.itacademy.model.Task;
 import com.softserve.itacademy.model.ToDo;
 import com.softserve.itacademy.model.User;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 public class SecurityService {
     private final ToDoService toDoService;
     private final UserService userService;
-    private final TaskService taskService;
 
     public boolean isTodoOwner(Long id) {
         User currentUser = userService.getCurrentUser();
@@ -31,20 +29,5 @@ public class SecurityService {
         User currentUser = userService.getCurrentUser();
         return currentUser.getId() == userId;
     }
-
-    public boolean isOwnerTask(Long taskId) {
-        User currentUser = userService.getCurrentUser();
-        Task currentTask = taskService.readById(taskId);
-
-        boolean isOwner = currentUser.getMyTodos().stream()
-                .anyMatch(toDo -> toDo.getTasks().stream()
-                        .anyMatch(task -> task.getId() == taskId));
-
-        boolean isCollaborator = currentTask.getTodo().getCollaborators().stream()
-                .anyMatch(collaborator -> collaborator.getId() == currentUser.getId());
-
-        return isOwner || isCollaborator;
-    }
-
 
 }

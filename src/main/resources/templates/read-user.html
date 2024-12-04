@@ -13,7 +13,12 @@
         <h2 th:text="${'All To-Dos of ' + user.firstName + ' ' + user.lastName}"/>
         <form th:action="@{|/todos/create/users/${user.id}|}" method="get">
             <input type="submit" class="btn btn-primary" value="Create To-Do">
-        </form>
+        </form><br>
+        <div class="md-3" th:if="${param.success}">
+            <div class="alert alert-info">
+                <p th:text="${success}"></p>
+            </div>
+        </div>
         <br>
         <table class="table">
             <tr>

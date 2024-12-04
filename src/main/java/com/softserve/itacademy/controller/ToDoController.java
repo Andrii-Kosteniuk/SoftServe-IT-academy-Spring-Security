@@ -110,6 +110,7 @@ public class ToDoController {
         List<ToDo> todos = todoService.getByUserId(userId);
         model.addAttribute("todos", todos);
         model.addAttribute("user", userService.readById(userId));
+        model.addAttribute("success", "Your password was successfully changed!");
         return "read-user";
     }
 

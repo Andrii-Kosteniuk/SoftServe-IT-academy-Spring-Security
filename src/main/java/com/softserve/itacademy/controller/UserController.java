@@ -18,6 +18,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @Controller
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -104,38 +106,40 @@ public class UserController {
     @GetMapping("/all")
     public String getAll(Model model) {
         model.addAttribute("users", userService.getAll());
+        model.addAttribute("success", "Your password was successfully changed!");
         return "users-list";
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN') or @securityService.isCurrentUserAndOwner(#id)")
-    @GetMapping("/{id}/change-password")
-    public String changePasswordForm(@PathVariable long id, Model model) {
-        User user = userService.readById(id);
-        model.addAttribute("user", user);
-        return "update-user";
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    @GetMapping("/change-password")
+    public String changePasswordForm(Model model) {
+        model.addAttribute("error", "You provide a wrong ald password. Please try again.");
+        return "change-password";
     }
 
-//    @PreAuthorize("hasAnyAuthority('ADMIN') or @securityService.isCurrentUserAndOwner(#id)")
-//    @PostMapping("/{id}/change-password")
-//    public String changePassword(@PathVariable long id,
-//                                 Model model,
-//                                 @Validated @ModelAttribute("user") User user,
-//                                 BindingResult result,
-//                                 @RequestParam("oldPassword") String oldPassword,
-//                                 @RequestParam("newPassword") String newPassword) {
-//
-//        if (! passwordEncoder.matches(oldPassword, user.getPassword())) {
-//            result.rejectValue("oldPassword", "error.oldPassword", "Old password is incorrect.");
-//        }
-//
-//        if (result.hasErrors()) {
-//            model.addAttribute("user", user);
-//            return "update-user";
-//        }
-//
-//        user.setPassword(passwordEncoder.encode(newPassword));
-//        userRepository.save(user);
-//
-//        return "redirect:/users/" + id + "/read";
-//    }
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    @PostMapping("/change-password")
+    public String changePassword(
+            @RequestParam("oldPassword") String oldPassword,
+            @RequestParam("newPassword") String newPassword,
+            Principal principal,
+            Model model) {
+        String name = principal.getName();
+        var user = userService.findByUsername(name);
+
+        if (user.isPresent()) {
+            if (passwordEncoder.matches(oldPassword, user.get().getPassword())) {
+                user.get().setPassword(passwordEncoder.encode(newPassword));
+                userRepository.save(user.get());
+                if (user.get().getRole().equals(UserRole.ADMIN)) {
+                    return "redirect:/users/all?success=true";
+                } else {
+                    return "redirect:/todos/all/users/" + user.get().getId() + "?success=true";
+                }
+
+            }
+        }
+
+        return "redirect:/users/change-password?error=true";
+    }
 }
