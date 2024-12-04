@@ -5,6 +5,7 @@ import com.softserve.itacademy.config.WithMockCustomUser;
 import com.softserve.itacademy.controller.UserController;
 import com.softserve.itacademy.dto.userDto.CreateUserDto;
 import com.softserve.itacademy.dto.userDto.UserDto;
+import com.softserve.itacademy.dto.userDto.UserDtoConverter;
 import com.softserve.itacademy.model.User;
 import com.softserve.itacademy.model.UserRole;
 import com.softserve.itacademy.repository.UserRepository;
@@ -24,6 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -56,6 +58,8 @@ public class UserControllerTest {
     @Autowired
     @Qualifier("withRoleUser")
     private User userWithRoleUser;
+    @MockBean
+    private UserDtoConverter userDtoConverter;
 
     @Test
     @WithMockCustomUser(email = "mike@mail.com", role = UserRole.ADMIN)
@@ -100,10 +104,7 @@ public class UserControllerTest {
                 .andExpect(redirectedUrl("/todos/all/users/0"))
                 .andDo(print());
 
-        verify(passwordEncoder, times(1)).encode(anyString());
         verify(userService, times(1)).create(any(User.class));
-
-        verifyNoMoreInteractions(passwordEncoder, userService);
     }
 
     @Test
@@ -169,88 +170,77 @@ public class UserControllerTest {
         verifyNoMoreInteractions(passwordEncoder, userService);
     }
 
-//    @Test
-//    @WithMockCustomUser(email = "nick@mail.com")
-//    public void testCorrectUpdatePostMethodWithRoleUSERAndCorrectPassword() throws Exception {
-//        when(userService.readById(anyLong())).thenReturn(userWithRoleUser);
-//        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
-//        when(passwordEncoder.encode(anyString())).thenReturn("");
-//
-//        mvc.perform(post("/users/2/update")
-//                        .param("firstName", userWithRoleUser.getFirstName())
-//                        .param("lastName", userWithRoleUser.getLastName())
-//                        .param("email", userWithRoleUser.getEmail())
-//                        .param("oldPassword", "2222")
-//                        .param("password", userWithRoleUser.getPassword())
-//                        .param("role", "USER")
-//                        .with(csrf())
-//                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-//                .andExpect(model().hasNoErrors())
-//                .andExpect(status().is3xxRedirection())
-//                .andExpect(redirectedUrl("/users/2/read"))
-//                .andDo(print());
-//
-//        verify(userService, times(1)).findByIdThrowing(anyLong());
-//        verify(userService, times(1)).update(any(com.softserve.itacademy.dto.userDto.UpdateUserDto.class));
-//
-//        verifyNoMoreInteractions(passwordEncoder, userService);
-//    }
+    @Test
+    @WithMockCustomUser(email = "nick@mail.com")
+    public void testCorrectUpdatePostMethodWithRoleUSERAndCorrectPassword() throws Exception {
+        when(userService.findByUsername("nick@mail.com")).thenReturn(Optional.of(userWithRoleUser));
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        when(userRepository.save(any(User.class))).thenReturn(userWithRoleUser);
 
-//    @Test
-//    @WithMockCustomUser(email = "mike@mail.com", role = UserRole.ADMIN)
-//    public void testCorrectUpdatePostMethodWithRoleADMINAndCorrectPassword() throws Exception {
-//        when(userService.readById(anyLong())).thenReturn(userWithRoleAdmin);
-//        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
-//        when(passwordEncoder.encode(anyString())).thenReturn("");
-//
-//        mvc.perform(post("/users/1/update")
-//                        .param("firstName", userWithRoleAdmin.getFirstName())
-//                        .param("lastName", userWithRoleAdmin.getLastName())
-//                        .param("email", userWithRoleAdmin.getEmail())
-//                        .param("oldPassword", "1111")
-//                        .param("password", userWithRoleAdmin.getPassword())
-//                        .param("role", "ADMIN")
-//                        .with(csrf())
-//                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-//                .andExpect(model().hasNoErrors())
-//                .andExpect(status().is3xxRedirection())
-//                .andExpect(redirectedUrl("/users/1/read"))
-//                .andDo(print());
-//
-//        verify(userService, times(1)).findByIdThrowing(anyLong());
-//        verify(userService, times(1)).update(any(UpdateUserDto.class));
-//
-//        verifyNoMoreInteractions(passwordEncoder, userService);
-//    }
+        mvc.perform(post("/users/change-password")
+                        .param("firstName", userWithRoleUser.getFirstName())
+                        .param("lastName", userWithRoleUser.getLastName())
+                        .param("email", userWithRoleUser.getEmail())
+                        .param("oldPassword", "2222")
+                        .param("newPassword", "newPassword")
+                        .param("password", "newPassword")
+                        .param("role", "USER")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED));
 
-//    @Test
-//    @WithMockCustomUser(email = "mike@mail.com", role = UserRole.ADMIN)
-//    public void testErrorUpdatePostMethodWithRoleADMINAndInvalidPassword() throws Exception {
-//        when(userService.readById(anyLong())).thenReturn(userWithRoleAdmin);
-//        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
-//
-//        mvc.perform(post("/users/1/change-password")
-//                        .param("firstName", userWithRoleAdmin.getFirstName())
-//                        .param("lastName", userWithRoleAdmin.getLastName())
-//                        .param("email", userWithRoleAdmin.getEmail())
-//                        .param("oldPassword", "1111")
-//                        .param("password", userWithRoleAdmin.getPassword())
-//                        .param("role", "ADMIN")
-//                        .with(csrf())
-//                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-//                .andExpect(model().hasErrors())
-//                .andExpect(model().attributeHasFieldErrors("user", "password"))
-//                .andExpect(status().isOk())
-//                .andExpect(view().name("update-user"))
-//                .andExpect(model().size(2))
-//                .andExpect(model().attribute("user", userWithRoleAdmin))
-//                .andExpect(model().attribute("roles", UserRole.values()))
-//                .andDo(print());
-//
-//        verify(userService, times(1)).findByIdThrowing(anyLong());
-//
-//        verifyNoMoreInteractions(passwordEncoder, userService);
-//    }
+        verify(userService, times(1)).findByUsername("nick@mail.com");
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    @WithMockCustomUser(email = "mike@mail.com", role = UserRole.ADMIN)
+    public void testCorrectUpdatePostMethodWithRoleADMINAndCorrectPassword() throws Exception {
+        when(userService.findByUsername("mike@mail.com")).thenReturn(Optional.of(userWithRoleAdmin));
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        when(userRepository.save(any(User.class))).thenReturn(userWithRoleAdmin);
+
+        mvc.perform(post("/users/change-password")
+                        .param("firstName", userWithRoleAdmin.getFirstName())
+                        .param("lastName", userWithRoleAdmin.getLastName())
+                        .param("email", userWithRoleAdmin.getEmail())
+                        .param("oldPassword", "1111")
+                        .param("newPassword", "newpassword")
+                        .param("password", "newpassword")
+                        .param("role", "ADMIN")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/all?success=true"))
+                .andDo(print());
+
+        verify(userService, times(1)).findByUsername("mike@mail.com");
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    @WithMockCustomUser(email = "mike@mail.com", role = UserRole.ADMIN)
+    public void testErrorUpdatePostMethodWithRoleADMINAndInvalidPassword() throws Exception {
+        when(userService.readById(anyLong())).thenReturn(userWithRoleAdmin);
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+        when(userRepository.save(any(User.class))).thenReturn(userWithRoleAdmin);
+        when(userService.findByUsername(anyString())).thenReturn(Optional.of(userWithRoleAdmin));
+
+        mvc.perform(post("/users/change-password")
+                        .param("firstName", userWithRoleAdmin.getFirstName())
+                        .param("lastName", userWithRoleAdmin.getLastName())
+                        .param("email", userWithRoleAdmin.getEmail())
+                        .param("oldPassword", "3333")
+                        .param("newPassword", "5555")
+                        .param("password", userWithRoleAdmin.getPassword())
+                        .param("role", "ADMIN")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/change-password?error=true"))
+                .andDo(print());
+
+        verify(userService, times(1)).findByUsername(anyString());
+    }
 
     @Test
     @WithMockCustomUser(email = "mike@mail.com", role = UserRole.ADMIN)
@@ -323,9 +313,10 @@ public class UserControllerTest {
                         .contentType(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
                 .andExpect(view().name("users-list"))
-                .andExpect(model().size(1))
+                .andExpect(model().size(2))
                 .andExpect(model().attribute("users",
                         List.of(new User(), new User(), new User())))
+                .andExpect(model().attribute("success", "Your password was successfully changed!"))
                 .andDo(print());
 
         verify(userService, times(1)).getAll();

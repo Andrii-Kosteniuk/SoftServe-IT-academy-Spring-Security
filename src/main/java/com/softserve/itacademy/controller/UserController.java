@@ -128,20 +128,20 @@ public class UserController {
         return "users-list";
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+
     @GetMapping("/change-password")
     public String changePasswordForm(Model model) {
         log.info("Accessing change password form.");
-        model.addAttribute("error", "You provide a wrong ald password. Please try again.");
+        model.addAttribute("error", "You provide a wrong old password. Please try again.");
         return "change-password";
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     @PostMapping("/change-password")
     public String changePassword(
             @RequestParam("oldPassword") String oldPassword,
             @RequestParam("newPassword") String newPassword,
             Principal principal) {
+
         String name = principal.getName();
         log.info("Processing password change request for user: {}", name);
         var user = userService.findByUsername(name);
@@ -154,7 +154,7 @@ public class UserController {
                 if (user.get().getRole().equals(UserRole.ADMIN)) {
                     log.info("Password changed successfully for user: {}", name);
                     return "redirect:/users/all?success=true";
-                } else {
+                } else if (user.get().getRole().equals(UserRole.USER)) {
                     log.info("Password changed successfully for user: {}", name);
                     return "redirect:/todos/all/users/" + user.get().getId() + "?success=true";
                 }
